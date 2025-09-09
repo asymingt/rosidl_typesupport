@@ -74,7 +74,7 @@ py_pytest(
     name = "test_cli_extension",
     srcs = ["test/test_cli_extension.py"],
     python_version = "PY3",
-    data = ["test/msg/Test.msg"],
+#    data = ["test/msg/Test.msg"],
     deps = [":rosidl_typesupport_c_py"],
 )
 
