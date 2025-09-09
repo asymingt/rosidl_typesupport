@@ -28,7 +28,8 @@ def _c_typesupport_aspect_impl(target, ctx):
     input_type_descriptions = target[RosTypeDescriptionInfo].jsons.to_list()
 
     # Generate type support
-    c_typesupport_hdrs, c_typesupport_srcs, _ = generate_sources(
+    c_typesupport_hdrs, c_typesupport_srcs, c_include_dir = generate_sources(
+        target = target,
         ctx = ctx,
         executable = ctx.executable._c_typesupport_generator,
         mnemonic = "CTypeSupportGeneration",
@@ -46,7 +47,8 @@ def _c_typesupport_aspect_impl(target, ctx):
     )
 
     # Generate the type support library for introspection
-    c_introspection_hdrs, c_introspection_srcs, _ = generate_sources(
+    c_introspection_hdrs, c_introspection_srcs, c_introspection_include_dir = generate_sources(
+        target = target,
         ctx = ctx,
         executable = ctx.executable._c_typesupport_introspection_generator,
         mnemonic = "CTypeSupportIntrospectionGeneration",
@@ -59,7 +61,8 @@ def _c_typesupport_aspect_impl(target, ctx):
     )
 
     # Generate the type support library for fastrtps
-    c_fastrtps_hdrs, c_fastrtps_srcs, _ = generate_sources(
+    c_fastrtps_hdrs, c_fastrtps_srcs, c_fastrtps_include_dir = generate_sources(
+        target = target,
         ctx = ctx,
         executable = ctx.executable._c_typesupport_fastrtps_generator,
         mnemonic = "CTypeSupportFastRTPSGeneration",
@@ -71,18 +74,21 @@ def _c_typesupport_aspect_impl(target, ctx):
         template_visibility_control = ctx.file._c_typesupport_fastrtps_visibility_template,
     )
 
-    # Generate the type support library for protobuf
-    c_protobuf_hdrs, c_protobuf_srcs, _ = generate_sources(
-        ctx = ctx,
-        executable = ctx.executable._c_typesupport_protobuf_generator,
-        mnemonic = "CTypeSupportProtobufGeneration",
-        input_idls = input_idls,
-        input_type_descriptions = input_type_descriptions,
-        input_templates = ctx.attr._c_typesupport_protobuf_templates[DefaultInfo].files.to_list(),
-        templates_hdrs = ["{}__rosidl_typesupport_protobuf_c.hpp"],
-        templates_srcs = ["{}__rosidl_typesupport_protobuf_c.cpp"],
-        template_visibility_control = ctx.file._c_typesupport_protobuf_visibility_template,
-    )
+    # TODO(asymingt) protobuf_c typesupport symbols conflict with the protobuf_cpp symbols.
+    # I doubt however that anybody will realistically try to use these. We can always explore
+    # enabling them if somebody has a need for them.
+    # c_protobuf_hdrs, c_protobuf_srcs, c_protobuf_include_dir = generate_sources(
+    #     target = target,
+    #     ctx = ctx,
+    #     executable = ctx.executable._c_typesupport_protobuf_generator,
+    #     mnemonic = "CTypeSupportProtobufGeneration",
+    #     input_idls = input_idls,
+    #     input_type_descriptions = input_type_descriptions,
+    #     input_templates = ctx.attr._c_typesupport_protobuf_templates[DefaultInfo].files.to_list(),
+    #     templates_hdrs = ["{}__rosidl_typesupport_protobuf_c.hpp"],
+    #     templates_srcs = ["{}__rosidl_typesupport_protobuf_c.cpp"],
+    #     template_visibility_control = ctx.file._c_typesupport_protobuf_visibility_template,
+    # )
 
     # These deps will all have CcInfo providers.
     deps = [target[CcInfo]]
@@ -94,14 +100,19 @@ def _c_typesupport_aspect_impl(target, ctx):
             deps.extend([d for d in dep[RosCTypesupportInfo].cc_infos.to_list()])
     
     # Merge headers, sources and deps into a CcInfo provider.
-    hdrs = c_typesupport_hdrs + c_introspection_hdrs + c_fastrtps_hdrs #+ c_protobuf_hdrs
-    srcs = c_typesupport_srcs + c_introspection_srcs + c_fastrtps_srcs #+ c_protobuf_srcs
+    hdrs = c_typesupport_hdrs + c_introspection_hdrs + c_fastrtps_hdrs
+    srcs = c_typesupport_srcs + c_introspection_srcs + c_fastrtps_srcs
     cc_info = generate_cc_info(
         ctx = ctx,
         name = "{}_c_typesupport".format(ctx.label.name),
         hdrs = hdrs,
         srcs = srcs,
         deps = deps,
+        include_dirs = [
+            c_include_dir,
+            c_introspection_include_dir,
+            c_fastrtps_include_dir,
+        ]
     )
 
     # Return a CcInfo provider for the aspect.

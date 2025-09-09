@@ -29,7 +29,8 @@ def _cc_typesupport_aspect_impl(target, ctx):
     input_type_descriptions = target[RosTypeDescriptionInfo].jsons.to_list()
 
     # Generate type support
-    cc_typesupport_hdrs, cc_typesupport_srcs, _ = generate_sources(
+    cc_typesupport_hdrs, cc_typesupport_srcs, cc_include_dir = generate_sources(
+        target = target,
         ctx = ctx,
         executable = ctx.executable._cc_typesupport_generator,
         mnemonic = "CCTypeSupportGeneration",
@@ -47,7 +48,8 @@ def _cc_typesupport_aspect_impl(target, ctx):
     )
 
     # Generate the type support library for introspection
-    cc_introspection_hdrs, cc_introspection_srcs, _ = generate_sources(
+    cc_introspection_hdrs, cc_introspection_srcs, cc_introspection_include_dir = generate_sources(
+        target = target,
         ctx = ctx,
         executable = ctx.executable._cc_typesupport_introspection_generator,
         mnemonic = "CcTypeSupportIntrospectionGeneration",
@@ -60,7 +62,8 @@ def _cc_typesupport_aspect_impl(target, ctx):
     )
 
     # Generate the type support library for fastrtps
-    cc_fastrtps_hdrs, cc_fastrtps_srcs, _ = generate_sources(
+    cc_fastrtps_hdrs, cc_fastrtps_srcs, cc_fastrtps_include_dir = generate_sources(
+        target = target,
         ctx = ctx,
         executable = ctx.executable._cc_typesupport_fastrtps_generator,
         mnemonic = "CcTypeSupportFastRTPSGeneration",
@@ -73,7 +76,8 @@ def _cc_typesupport_aspect_impl(target, ctx):
     )
 
     # Generate the type support library for protobuf
-    cc_protobuf_hdrs, cc_protobuf_srcs, _ = generate_sources(
+    cc_protobuf_hdrs, cc_protobuf_srcs, cc_protobuf_include_dir = generate_sources(
+        target = target,
         ctx = ctx,
         executable = ctx.executable._cc_typesupport_protobuf_generator,
         mnemonic = "CcTypeSupportProtobufGeneration",
@@ -109,6 +113,12 @@ def _cc_typesupport_aspect_impl(target, ctx):
         hdrs = hdrs,
         srcs = srcs,
         deps = deps,
+        include_dirs = [
+            cc_include_dir,
+            cc_introspection_include_dir,
+            cc_fastrtps_include_dir,
+            cc_protobuf_include_dir
+        ]
     )
 
     # Return a CcInfo provider for the aspect.
