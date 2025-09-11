@@ -15,8 +15,7 @@
 
 # Imports
 
-load("@ros//:defs.bzl", "ros_package")
-load("@ros//python:defs.bzl", "py_pytest")
+load("@osrf_pycommon//:macros.bzl", "py_pytest")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
@@ -73,8 +72,4 @@ py_pytest(
     python_version = "PY3",
 #    data = ["test/msg/Test.msg"],
     deps = [":rosidl_typesupport_cpp_py"],
-)
-
-ros_package(
-    name = "rosidl_typesupport_cpp",
 )

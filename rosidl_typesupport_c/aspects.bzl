@@ -15,7 +15,7 @@
 
 load("@rules_cc//cc:defs.bzl", "CcInfo", "cc_common")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain", "use_cc_toolchain")
-load("@ros//:defs.bzl", "RosInterfaceInfo")
+load("@rosidl_cmake//:types.bzl", "RosInterfaceInfo")
 load("@rosidl_adapter//:types.bzl", "RosIdlInfo")
 load("@rosidl_adapter//:tools.bzl", "generate_sources", "generate_cc_info")
 load("@rosidl_generator_c//:types.bzl", "RosCBindingsInfo")
