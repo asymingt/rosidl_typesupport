@@ -26,8 +26,8 @@ load(":types.bzl", "RosCcTypesupportInfo", "RosCcTypesupportFilesInfo")
 
 
 def _cc_typesupport_files_aspect_impl(target, ctx):
-    input_idls = target[RosIdlInfo].idls.to_list()
-    input_type_descriptions = target[RosTypeDescriptionInfo].jsons.to_list()
+    input_idls = target[RosIdlInfo].idls.to_list()[-1]
+    input_type_descriptions = target[RosTypeDescriptionInfo].jsons.to_list()[-1]
 
     # Generate type support
     cc_typesupport_hdrs, cc_typesupport_srcs, cc_include_dir = generate_sources(
@@ -35,8 +35,8 @@ def _cc_typesupport_files_aspect_impl(target, ctx):
         ctx = ctx,
         executable = ctx.executable._cc_typesupport_generator,
         mnemonic = "CCTypeSupportGeneration",
-        input_idls = input_idls,
-        input_type_descriptions = input_type_descriptions,
+        input_idls = [input_idls],
+        input_type_descriptions = [input_type_descriptions],
         input_templates = ctx.attr._cc_typesupport_templates[DefaultInfo].files.to_list(),
         templates_hdrs = [],
         templates_srcs = ["detail/{}__rosidl_typesupport_cpp.cpp"],
@@ -54,8 +54,8 @@ def _cc_typesupport_files_aspect_impl(target, ctx):
         ctx = ctx,
         executable = ctx.executable._cc_typesupport_introspection_generator,
         mnemonic = "CcTypeSupportIntrospectionGeneration",
-        input_idls = input_idls,
-        input_type_descriptions = input_type_descriptions,
+        input_idls = [input_idls],
+        input_type_descriptions = [input_type_descriptions],
         input_templates = ctx.attr._cc_typesupport_introspection_templates[DefaultInfo].files.to_list(),
         templates_hdrs = ["detail/{}__rosidl_typesupport_introspection_cpp.hpp"],
         templates_srcs = ["detail/{}__rosidl_typesupport_introspection_cpp.cpp"],
@@ -68,8 +68,8 @@ def _cc_typesupport_files_aspect_impl(target, ctx):
         ctx = ctx,
         executable = ctx.executable._cc_typesupport_fastrtps_generator,
         mnemonic = "CcTypeSupportFastRTPSGeneration",
-        input_idls = input_idls,
-        input_type_descriptions = input_type_descriptions,
+        input_idls = [input_idls],
+        input_type_descriptions = [input_type_descriptions],
         input_templates = ctx.attr._cc_typesupport_fastrtps_templates[DefaultInfo].files.to_list(),
         templates_hdrs = ["detail/{}__rosidl_typesupport_fastrtps_cpp.hpp"],
         templates_srcs = ["detail/{}__rosidl_typesupport_fastrtps_cpp.cpp"],
@@ -82,8 +82,8 @@ def _cc_typesupport_files_aspect_impl(target, ctx):
         ctx = ctx,
         executable = ctx.executable._cc_typesupport_protobuf_generator,
         mnemonic = "CcTypeSupportProtobufGeneration",
-        input_idls = input_idls,
-        input_type_descriptions = input_type_descriptions,
+        input_idls = [input_idls],
+        input_type_descriptions = [input_type_descriptions],
         input_templates = ctx.attr._cc_typesupport_protobuf_templates[DefaultInfo].files.to_list(),
         templates_hdrs = [
             "{}__rosidl_typesupport_protobuf_cpp.hpp",
