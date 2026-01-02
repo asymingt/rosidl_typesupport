@@ -16,14 +16,6 @@ RosCcTypesupportInfo = provider(
     "Encapsulates C++ type support information for an underlying ROS message.", 
     fields = [
         "cc_info",
-    ]
-)
-
-RosCcTypesupportFilesInfo = provider(
-    "Encapsulates C++ type support generated sources for an underlying ROS message.", 
-    fields = [
-        "srcs",
-        "hdrs",
-        "include_dirs",
+        "dynamic_libraries",
     ]
 )
