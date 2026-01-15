@@ -64,7 +64,7 @@ def _rosidl_typesupport_c_aspect_impl(target, ctx):
         if typesupports in target:
             deps.append(target[typesupports].cc_info)
 
-    cc_info, dynamic_library = generate_compilation_information(
+    cc_info, dynamic_libraries = generate_compilation_information(
         ctx = ctx,
         name = "{}__{}__{}__rosidl_typesupport_c".format(
             target[RosIdlInfo].package_name,
@@ -81,7 +81,7 @@ def _rosidl_typesupport_c_aspect_impl(target, ctx):
         RosCTypesupportInfo(
             cc_info = cc_info,
             dynamic_libraries = depset(
-                direct = [dynamic_library],
+                direct = dynamic_libraries,
                 transitive = [
                     dep[RosCTypesupportInfo].dynamic_libraries
                     for dep in ctx.rule.attr.deps
