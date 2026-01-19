@@ -12,28 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rosidl_cmake//:types.bzl", "RosInterfaceInfo")
+load("@rosidl_adapter//:tools.bzl", "generate_compilation_information", "generate_sources")
 load("@rosidl_adapter//:types.bzl", "RosIdlInfo")
-load("@rosidl_adapter//:tools.bzl", "generate_sources", "generate_compilation_information")
+load("@rosidl_cmake//:types.bzl", "RosInterfaceInfo")
 load("@rosidl_generator_c//:types.bzl", "RosCBindingsInfo")
 load("@rosidl_generator_cpp//:types.bzl", "RosCcBindingsInfo")
 load("@rosidl_generator_type_description//:types.bzl", "RosTypeDescriptionInfo")
 load("@rosidl_typesupport_c//:types.bzl", "RosCTypesupportInfo")
-load("@rosidl_typesupport_protobuf_cpp//:types.bzl", "RosCcTypesupportProtobufInfo")
 load("@rosidl_typesupport_fastrtps_cpp//:types.bzl", "RosCcTypesupportFastRTPSInfo")
 load("@rosidl_typesupport_introspection_cpp//:types.bzl", "RosCcTypesupportIntrospectionInfo")
+load("@rosidl_typesupport_protobuf_cpp//:types.bzl", "RosCcTypesupportProtobufInfo")
 load("@rules_cc//cc:defs.bzl", "CcInfo", "cc_common")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "use_cc_toolchain")
 load(":types.bzl", "RosCcTypesupportInfo")
 
 TYPESUPPORTS = {
-    "rosidl_typesupport_fastrtps_cpp" : RosCcTypesupportFastRTPSInfo,
-    "rosidl_typesupport_introspection_cpp" : RosCcTypesupportIntrospectionInfo,
-    "rosidl_typesupport_protobuf_cpp" : RosCcTypesupportProtobufInfo,
+    "rosidl_typesupport_fastrtps_cpp": RosCcTypesupportFastRTPSInfo,
+    "rosidl_typesupport_introspection_cpp": RosCcTypesupportIntrospectionInfo,
+    "rosidl_typesupport_protobuf_cpp": RosCcTypesupportProtobufInfo,
 }
 
 def _rosidl_typesupport_cpp_aspect_impl(target, ctx):
-
     # Decide what typesupport to include based on the available providers
     additional = ["--typesupports"]
     for name, provider in TYPESUPPORTS.items():
@@ -63,13 +62,13 @@ def _rosidl_typesupport_cpp_aspect_impl(target, ctx):
         if typesupports in target:
             deps.append(target[typesupports].cc_info)
 
-    cc_info, dynamic_libraries = generate_compilation_information(
+    cc_info, dynamic_library = generate_compilation_information(
         ctx = ctx,
         name = "{}__{}__{}__rosidl_typesupport_cpp".format(
             target[RosIdlInfo].package_name,
             target[RosIdlInfo].interface_type,
             target[RosIdlInfo].interface_code,
-        ),        
+        ),
         hdrs = hdrs,
         srcs = srcs,
         deps = deps,
@@ -80,13 +79,13 @@ def _rosidl_typesupport_cpp_aspect_impl(target, ctx):
         RosCcTypesupportInfo(
             cc_info = cc_info,
             dynamic_libraries = depset(
-                direct = dynamic_libraries,
+                direct = [dynamic_library],
                 transitive = [
                     dep[RosCcTypesupportInfo].dynamic_libraries
                     for dep in ctx.rule.attr.deps
                     if RosCcTypesupportInfo in dep
                 ],
-            ),        
+            ),
         ),
     ]
 
@@ -109,7 +108,7 @@ rosidl_typesupport_cpp_aspect = aspect(
                 Label("@rosidl_typesupport_cpp"),
             ],
             providers = [CcInfo],
-        ),  
+        ),
     },
     required_providers = [RosInterfaceInfo],
     required_aspect_providers = [
