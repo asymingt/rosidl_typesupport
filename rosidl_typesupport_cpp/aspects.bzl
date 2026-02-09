@@ -36,8 +36,7 @@ def _rosidl_typesupport_cpp_aspect_impl(target, ctx):
     # Decide what typesupport to include based on the available providers
     additional = ["--typesupports"]
     for name, provider in TYPESUPPORTS.items():
-        if provider in target:
-            additional.append(name)
+        additional.append(name)
 
     # Generate the sources
     hdrs, srcs, include_dirs = generate_sources(
@@ -51,16 +50,17 @@ def _rosidl_typesupport_cpp_aspect_impl(target, ctx):
         templates_hdrs = [],
         templates_srcs = ["detail/{}__rosidl_typesupport_cpp.cpp"],
         additional = additional,
+        debug = True
     )
 
     deps = [dep[CcInfo] for dep in ctx.attr._cc_deps if CcInfo in dep]
+    deps.append(target[RosCcBindingsInfo].cc_info)
     for dep in ctx.rule.attr.deps:
         if RosCcTypesupportInfo in dep:
             deps.append(dep[RosCcTypesupportInfo].cc_info)
-    deps.append(target[RosCcBindingsInfo].cc_info)
-    for typesupports in TYPESUPPORTS.values():
-        if typesupports in target:
-            deps.append(target[typesupports].cc_info)
+    # for typesupports in TYPESUPPORTS.values():
+    #     if typesupports in target:
+    #         deps.append(target[typesupports].cc_info)
 
     cc_info, dynamic_library = generate_compilation_information(
         ctx = ctx,
@@ -86,6 +86,7 @@ def _rosidl_typesupport_cpp_aspect_impl(target, ctx):
                     if RosCcTypesupportInfo in dep
                 ],
             ),
+            linker_inputs = cc_info.linking_context.linker_inputs
         ),
     ]
 
@@ -116,9 +117,9 @@ rosidl_typesupport_cpp_aspect = aspect(
         [RosTypeDescriptionInfo],
         [RosCBindingsInfo],
         [RosCcBindingsInfo],
-        [RosCcTypesupportFastRTPSInfo],
-        [RosCcTypesupportIntrospectionInfo],
-        [RosCcTypesupportProtobufInfo],
+        # [RosCcTypesupportFastRTPSInfo],
+        # [RosCcTypesupportIntrospectionInfo],
+        # [RosCcTypesupportProtobufInfo],
     ],
     provides = [RosCcTypesupportInfo],
 )

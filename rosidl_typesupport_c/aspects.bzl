@@ -19,6 +19,7 @@ load("@rosidl_generator_c//:types.bzl", "RosCBindingsInfo")
 load("@rosidl_generator_cpp//:types.bzl", "RosCcBindingsInfo")
 load("@rosidl_generator_type_description//:types.bzl", "RosTypeDescriptionInfo")
 load("@rosidl_typesupport_fastrtps_c//:types.bzl", "RosCTypesupportFastRTPSInfo")
+load("@rosidl_typesupport_fastrtps_cpp//:types.bzl", "RosCcTypesupportFastRTPSInfo")
 load("@rosidl_typesupport_introspection_c//:types.bzl", "RosCTypesupportIntrospectionInfo")
 load("@rosidl_typesupport_protobuf_c//:types.bzl", "RosCTypesupportProtobufInfo")
 load("@rules_cc//cc:defs.bzl", "CcInfo", "cc_common")
@@ -26,6 +27,7 @@ load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain", "use_cc_toolcha
 load(":types.bzl", "RosCTypesupportInfo")
 
 TYPESUPPORTS = {
+    "rosidl_typesupport_fastrtps_cpp": RosCcTypesupportFastRTPSInfo,
     "rosidl_typesupport_fastrtps_c": RosCTypesupportFastRTPSInfo,
     "rosidl_typesupport_introspection_c": RosCTypesupportIntrospectionInfo,
     "rosidl_typesupport_protobuf_c": RosCTypesupportProtobufInfo,
@@ -35,8 +37,7 @@ def _rosidl_typesupport_c_aspect_impl(target, ctx):
     # Decide what typesupport to include based on the available providers
     additional = ["--typesupports"]
     for name, provider in TYPESUPPORTS.items():
-        if provider in target:
-            additional.append(name)
+        additional.append(name)
 
     # Generate the source files
     hdrs, srcs, include_dirs = generate_sources(
@@ -54,13 +55,13 @@ def _rosidl_typesupport_c_aspect_impl(target, ctx):
 
     # Calculate deps for this target's CcInfo.
     deps = [dep[CcInfo] for dep in ctx.attr._c_deps if CcInfo in dep]
+    deps.append(target[RosCBindingsInfo].cc_info)
     for dep in ctx.rule.attr.deps:
         if RosCTypesupportInfo in dep:
             deps.append(dep[RosCTypesupportInfo].cc_info)
-    deps.append(target[RosCBindingsInfo].cc_info)
-    for typesupports in TYPESUPPORTS.values():
-        if typesupports in target:
-            deps.append(target[typesupports].cc_info)
+    # for typesupports in TYPESUPPORTS.values():
+    #     if typesupports in target:
+    #         deps.append(target[typesupports].cc_info)
 
     cc_info, dynamic_library = generate_compilation_information(
         ctx = ctx,
@@ -86,6 +87,7 @@ def _rosidl_typesupport_c_aspect_impl(target, ctx):
                     if RosCTypesupportInfo in dep
                 ],
             ),
+            linker_inputs = cc_info.linking_context.linker_inputs
         ),
     ]
 
@@ -115,9 +117,11 @@ rosidl_typesupport_c_aspect = aspect(
         [RosIdlInfo],
         [RosTypeDescriptionInfo],
         [RosCBindingsInfo],
-        [RosCTypesupportFastRTPSInfo],
-        [RosCTypesupportIntrospectionInfo],
-        [RosCTypesupportProtobufInfo],
+        [RosCcBindingsInfo],
+        # [RosCcTypesupportFastRTPSInfo],
+        # [RosCTypesupportFastRTPSInfo],
+        # [RosCTypesupportIntrospectionInfo],
+        # [RosCTypesupportProtobufInfo],
     ],
     provides = [RosCTypesupportInfo],
 )

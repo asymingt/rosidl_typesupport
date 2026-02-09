@@ -17,5 +17,6 @@ RosCTypesupportInfo = provider(
     fields = [
         "cc_info",
         "dynamic_libraries",
+        "linker_inputs",
     ]
 )
